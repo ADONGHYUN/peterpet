@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-config.dtd">
+  
+<configuration>
+	<typeAliases>
+		<typeAlias alias="prod" type="kr.co.peterpet.prod.ProdBean"/>
+		<typeAlias alias="res" type="kr.co.peterpet.res.ResBean"/>
+ 		<typeAlias alias="user" type="kr.co.peterpet.user.UserBean"/>
+		<typeAlias alias="pay" type="kr.co.peterpet.pay.PayBean"/>
+	</typeAliases>
+	
+	<mappers>
+		<mapper resource="kr/co/peterpet/prod/impl/ProdMapper.xml" />
+		<mapper resource="kr/co/peterpet/res/impl/ResMapper.xml" />
+		<mapper resource="kr/co/peterpet/user/impl/UserMapper.xml" />
+		<mapper resource="kr/co/peterpet/pay/impl/PayMapper.xml" />
+	</mappers>
+</configuration>

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="resDAO">
+	<resultMap type="res" id="resResult">
+		<id column="RNUM" property="rnum" />
+		<result column="UID" property="uid" />
+		<result column="PCODE" property="pcode" />
+		<result column="UNAME" property="uname" />
+		<result column="UTEL" property="utel" />
+		<result column="ADDR" property="addr" />
+		<result column="ZCODE" property="zcode" />
+		<result column="PNAME" property="pname" />
+		<result column="PTYPE" property="ptype" />
+		<result column="PIMG1" property="pimg1"/>
+		<result column="PPRICE" property="pprice" />
+		<result column="RSDAY" property="rsday" />
+		<result column="RPERIOD" property="rperiod" />
+		<result column="RCOUNT" property="rcount" />
+		<result column="RDINFO" property="rdinfo" />
+		<result column="RTOTAL" property="rtotal" />
+		<result column="REDAY" property="reday" />
+		<result column="RDATE" property="rdate" />
+	</resultMap>
+	
+	<insert id="insertResProd" parameterType="res">
+  		<![CDATA[INSERT INTO RESERVE(UID, PCODE, UNAME, UTEL, ADDR, ZCODE, PNAME, PTYPE, PPRICE, RCOUNT, RTOTAL) 
+  			VALUES(#{uid}, #{pcode}, #{uname}, #{utel}, #{addr}, #{zcode}, #{pname}, #{ptype}, #{pprice}, #{rcount}, #{rtotal})]]>
+	</insert>
+	
+	<update id="updateRes">
+  		<![CDATA[UPDATE reserve SET RCOUNT=#{rcount}, RTOTAL=#{rtotal} where RNUM=#{rnum}]]>
+ 	</update>
+  	
+	<delete id="deleteRes">
+  		<![CDATA[DELETE FROM reserve WHERE RNUM=#{rnum}]]>
+  	</delete>
+  	
+  	<delete id="deleteResPcode">
+  		<![CDATA[DELETE FROM reserve WHERE PCODE=#{pcode}]]>
+  	</delete>
+  	
+    <select id="getExist" resultMap="resResult">
+    	<![CDATA[SELECT * FROM reserve WHERE PCODE=#{pcode} AND UID=#{uid}]]>
+  	</select>
+  	
+	<select id="getResList" parameterType="res" resultMap="resResult">
+    	SELECT r.*, p.pimg1 FROM reserve r JOIN product p ON r.pcode = p.pcode
+    	WHERE r.UID=#{uid}
+    	AND (#{searchText} IS NULL OR #{searchText} = '' OR r.PNAME LIKE CONCAT('%', #{searchText}, '%'))
+    	ORDER BY RNUM DESC
+    	LIMIT 5 OFFSET #{offset}
+	</select>
+  	
+  	<select id="getSelectInfo" resultMap="resResult">
+    	<![CDATA[SELECT u.UID, p.PCODE, u.UNAME, u.UTEL, u.ADDR, u.ZCODE,
+    		p.pimg1, p.PNAME, p.PTYPE, p.PPRICE FROM USER u JOIN PRODUCT p ON u.UID = #{uid} AND p.PCODE = #{pcode}]]>
+  	</select>
+
+  	<insert id="reservePackage" parameterType="res">
+    	<![CDATA[INSERT INTO RESERVE (UID, PCODE, UNAME, UTEL, ADDR, ZCODE, PNAME, PTYPE, PPRICE, RSDAY, RPERIOD, RCOUNT, RDINFO, RTOTAL) 
+    		VALUES (#{uid}, #{pcode}, #{uname}, #{utel}, #{addr}, #{zcode}, #{pname}, #{ptype}, #{pprice}, #{rsday}, #{rperiod}, #{rcount}, #{rdinfo}, #{rtotal})
+    	]]>
+	</insert>
+	
+	<select id="getMyRes" resultType="res">
+		<![CDATA[SELECT r.*, p.pimg1 FROM reserve r JOIN product p ON r.pcode = p.pcode WHERE RNUM = #{rnum}]]>
+	</select>
+	
+	<select id="getReserveCount" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM RESERVE
+        WHERE UID = #{uid}
+        AND (PNAME LIKE CONCAT('%',#{searchText},'%') OR PNAME IS NULL)
+    </select>
+    
+    <update id="updatePack" parameterType="res">
+		<![CDATA[UPDATE RESERVE SET 
+    		PCODE = #{pcode},
+    		PNAME = #{pname},
+    		RSDAY = #{rsday},
+    		RPERIOD = #{rperiod},
+    		RCOUNT = #{rcount},
+    		RDINFO = #{rdinfo},
+    		RTOTAL = #{rtotal},
+    		REDAY = DATE_FORMAT(DATE_ADD(STR_TO_DATE(#{rsday}, '%Y-%m-%d'), INTERVAL #{rperiod} DAY) - INTERVAL 1 DAY, '%Y-%m-%d')
+			WHERE UID = #{uid} AND RNUM = #{rnum};]]>
+	</update>
+	
+	
+	
+	
+	<update id="updateAdRes">
+  		<![CDATA[
+			UPDATE reserve SET zcode=#{zcode}, addr=#{addr}, pcode=#{pcode}, pname=#{pname}, ptype=#{ptype}, pprice=#{pprice}, 
+			rsday=#{rsday}, rperiod=#{rperiod}, rcount=#{rcount}, rdinfo=#{rdinfo}, rtotal=#{rtotal},
+			reday=DATE_FORMAT(DATE_ADD(STR_TO_DATE(rsday, '%Y-%m-%d'), INTERVAL rperiod DAY) - INTERVAL 1 DAY, '%Y-%m-%d')
+   			WHERE RNUM=#{rnum}
+		]]>
+  	</update>
+
+  	<select id="getRes" resultType="res">
+    	<![CDATA[SELECT * FROM reserve WHERE RNUM=#{rnum}]]>
+  	</select>
+  	
+  	<select id="getAdResList" resultMap="resResult">
+    	SELECT * FROM reserve ORDER BY RNUM DESC
+  	</select>
+  	
+
+	
+	<insert id="insertResPack" parameterType="res">
+		<![CDATA[
+			INSERT INTO reserve (uid, uname, utel, pcode, pname, ptype, pprice, 
+			rsday, rperiod, rcount, rdinfo, rtotal)
+			VALUES ( #{uid}, #{uname}, #{utel}, #{pcode}, #{pname}, #{ptype}, #{pprice}, 
+			#{rsday}, #{rperiod}, #{rcount}, #{rdinfo}, #{rtotal} )
+		]]>
+  	</insert>
+  	  	
+  	<delete id="delete">
+        <![CDATA[DELETE FROM RESERVE WHERE UID=#{uid}]]>
+    </delete>
+</mapper>

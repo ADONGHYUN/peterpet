@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="userDAO">
+	<resultMap type="user" id="userList">
+		<id property="uid" column="UID" />
+		<result property="upw" column="UPW" />
+		<result property="uname" column="UNAME" />
+		<result property="utel" column="UTEL" />
+		<result property="uemail" column="UEMAIL" />
+		<result property="ubirth" column="UBIRTH" />
+		<result property="ugender" column="UGENDER" />
+		<result property="addr" column="ADDR" />
+		<result property="zcode" column="ZCODE" />
+		<result property="joindate" column="JOINDATE" />
+	</resultMap>
+
+	<select id="getID" resultType="String">
+		<![CDATA[
+		SELECT UID FROM USER
+		WHERE UID=#{uid}
+		]]>
+	</select>
+
+	<select id="getPW" resultType="String">
+		<![CDATA[
+		SELECT UPW FROM USER
+		WHERE UID=#{uid}
+		]]>
+	</select>
+	
+	<select id="searchAPI" resultType="String">
+		<![CDATA[
+		SELECT UID FROM USER WHERE
+		utel=#{utel}
+		AND uemail=#{uemail}
+		AND ugender=#{ugender}
+		AND uname=#{uname}
+		AND ubirth=#{ubirth}
+		]]>
+	</select>
+
+	<update id="setKAPI">
+		<![CDATA[
+		UPDATE USER SET KAPI=#{kapi}, KRToken=#{KRToken}
+		WHERE UID=#{uid}
+		]]>
+	</update>
+
+	<update id="setNAPI">
+		<![CDATA[
+		UPDATE USER SET NAPI=#{napi}, NRToken=#{NRToken}
+		WHERE UID=#{uid}
+		]]>
+	</update>
+	
+	<insert id="insertUser" parameterType="user">
+		<![CDATA[
+			INSERT INTO USER(UID, UPW, UNAME, UTEL, UEMAIL, UBIRTH, UGENDER, ADDR, ZCODE, NAPI, KAPI, KRToken, NRToken)
+			VALUES(#{uid},#{upw},#{uname},#{utel},#{uemail},#{ubirth},#{ugender},#{addr},#{zcode},#{napi},#{kapi},#{KRToken},#{NRToken})
+		]]>
+	</insert>
+	
+	<select id="getSameMail" resultType="user">
+		<![CDATA[
+		SELECT * FROM USER
+		WHERE UEMAIL=#{uemail}
+		]]>
+	</select>
+	
+	<update id="updateMailCode" parameterType="user">
+		<![CDATA[
+			UPDATE USER SET MAILCODE=#{mailcode} WHERE UEMAIL=#{uemail}
+		]]>
+	</update>
+	
+	<select id="getMailCode" resultType="user">
+		<![CDATA[
+			SELECT distinct mailcode FROM USER
+			WHERE UEMAIL=#{uemail}
+		]]>
+	</select>
+	
+	<update id="updateMailCodeId" parameterType="user">
+		<![CDATA[
+			UPDATE USER SET MAILCODE=#{mailcode} WHERE UID=#{uid}
+		]]>
+	</update>
+	
+	<select id="getMailCodePw" resultType="user">
+		<![CDATA[
+			SELECT mailcode FROM USER
+			WHERE UID=#{uid}
+		]]>
+	</select>
+	
+	<update id="pwChange" parameterType="user">
+		<![CDATA[
+			UPDATE USER SET UPW=#{upw} WHERE UID=#{uid}
+		]]>
+	</update>
+
+	<select id="getUser" resultType="user">
+		<![CDATA[
+		SELECT * FROM USER
+		WHERE UID=#{userId} OR KAPI=#{userId} OR NAPI=#{userId}
+		]]>
+	</select>
+
+	<update id="update">
+		<![CDATA[
+		UPDATE USER SET UTEL=#{utel}, UEMAIL=#{uemail}, zcode=#{zcode}, ADDR=#{addr}
+		WHERE UID=#{uid}
+		]]>
+	</update>
+	
+	<update id="pwUpdate">
+		<![CDATA[
+		UPDATE USER SET UPW=#{npw} WHERE UID=#{uid}
+		]]>
+	</update>
+	
+	<delete id="delete">
+		<![CDATA[
+		DELETE FROM USER WHERE UID=#{uid}
+		]]>
+	</delete>
+	
+	<!-- 관리자 -->
+		<select id="getmail" parameterType="String" resultType="int">
+	    SELECT COUNT(*)
+	    FROM user
+	    WHERE uemail = #{email}
+	</select>
+	
+	<select id="getChart1" resultType="map">
+   <![CDATA[
+    SELECT 
+        CASE
+            WHEN TIMESTAMPDIFF(YEAR, STR_TO_DATE(ubirth, '%Y%m%d'), CURDATE()) BETWEEN 10 AND 19 THEN '10-19'
+            WHEN TIMESTAMPDIFF(YEAR, STR_TO_DATE(ubirth, '%Y%m%d'), CURDATE()) BETWEEN 20 AND 29 THEN '20-29'
+            WHEN TIMESTAMPDIFF(YEAR, STR_TO_DATE(ubirth, '%Y%m%d'), CURDATE()) BETWEEN 30 AND 39 THEN '30-39'
+            WHEN TIMESTAMPDIFF(YEAR, STR_TO_DATE(ubirth, '%Y%m%d'), CURDATE()) BETWEEN 40 AND 49 THEN '40-49'
+            WHEN TIMESTAMPDIFF(YEAR, STR_TO_DATE(ubirth, '%Y%m%d'), CURDATE()) BETWEEN 50 AND 59 THEN '50-59'
+            ELSE '60+'
+        END AS age_range,
+        COUNT(*) AS user_count
+	    FROM user
+	    WHERE uid <> 'admin'
+	    GROUP BY age_range
+	    ORDER BY 
+        CASE 
+            WHEN age_range = '10-19' THEN 1
+            WHEN age_range = '20-29' THEN 2
+            WHEN age_range = '30-39' THEN 3
+            WHEN age_range = '40-49' THEN 4
+            WHEN age_range = '50-59' THEN 5
+            ELSE 6
+        END
+        ]]>
+	</select>
+
+	
+	
+	<select id="getChart2" resultType="map">
+    <![CDATA[
+	    SELECT
+	    ugender AS gender_label,
+	    COUNT(*) AS count
+		FROM user
+	 	WHERE uid <> 'admin'
+		GROUP BY ugender;
+   ]]>
+	</select>
+
+	
+	<select id="getUserCount" resultType="int">
+		SELECT COUNT(*)
+	    FROM user
+	    WHERE uid != 'admin'
+	</select>
+	
+	
+	<insert id="adInsert" >
+		<![CDATA[
+			INSERT INTO user(uid, upw, uname, utel, uemail, ubirth, ugender, zcode, addr)
+			VALUES(#{uid},#{upw},#{uname},#{utel},#{uemail},#{ubirth},#{ugender},#{zcode},#{addr})
+		]]>
+	</insert>
+	
+	<update id="adUpdate">
+		<![CDATA[
+			UPDATE user SET uname=#{uname},utel=#{utel},uemail=#{uemail}, zcode=#{zcode},addr=#{addr} WHERE uid=#{uid}
+		]]>
+	</update>
+
+ 	<select id="getListCount" resultType="int">
+		
+	SELECT COUNT(*)
+    FROM user
+    WHERE uid != 'admin'
+    <if test="searchCondition == 'uid'">
+        AND uid LIKE CONCAT('%', #{searchKeyword}, '%')
+    </if>
+    <if test="searchCondition == 'uname'">
+        AND uname LIKE CONCAT('%', #{searchKeyword}, '%')
+    </if>
+		
+	</select>
+ 
+	<select id="getUserList" resultType="user">
+	  SELECT * 
+	  FROM user 
+	  WHERE uid != 'admin'
+	  <if test="searchCondition == 'uid'">
+	    AND uid LIKE CONCAT('%', #{searchKeyword}, '%')
+	  </if>
+	  <if test="searchCondition == 'uname'">
+	    AND uname LIKE CONCAT('%', #{searchKeyword}, '%')
+	  </if>
+	  ORDER BY uid DESC
+	  LIMIT #{limit} OFFSET #{offset} 
+	</select>
+	
+</mapper>

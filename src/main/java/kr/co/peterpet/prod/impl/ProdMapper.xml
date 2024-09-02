@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="prodDAO">
+  <resultMap type="prod" id="prodResult">
+    <id property="pcode" column="PCODE"/>
+    <result property="pname" column="PNAME"/>
+    <result property="pdes" column="PDES"/>
+    <result property="pimg1" column="PIMG1"/>
+    <result property="pimg2" column="PIMG2"/>
+    <result property="pprice" column="PPRICE"/>
+    <result property="ptype" column="PTYPE"/>
+    <result property="pregdate" column="PREGDATE"/>
+  </resultMap>
+
+
+  <select id="getProd" resultType="prod">
+    <![CDATA[
+    SELECT * FROM product WHERE PCODE=#{pcode}
+    ]]>
+  </select>
+  
+  <select id="getProdList" resultMap="prodResult">
+    SELECT pcode, pname, pimg1, pprice, ptype, pregdate
+    FROM product
+    WHERE ptype IN ('간식', '미용', '사료', '영양제', '장난감')
+    ORDER BY pname
+  </select>
+  
+  <select id="getListAjax" resultMap="prodResult">
+    SELECT * FROM product
+    <where>
+        <if test="ptype != null and ptype != '' and ptype != 'all'">
+            ptype = #{ptype}
+        </if>
+        <if test="ptype == 'all'">
+            ptype IN ('간식', '미용', '사료', '영양제', '장난감')
+        </if>
+        <if test="searchKeyword != null and searchKeyword != ''">
+            AND pname LIKE CONCAT('%', #{searchKeyword}, '%')
+        </if>
+    </where>
+    <if test="arrayprod != null">
+        ORDER BY
+        <choose>
+            <when test="arrayprod == 'pname'">
+                pname
+            </when>
+            <when test="arrayprod == 'pprice desc'">
+                pprice DESC
+            </when>
+            <when test="arrayprod == 'pprice asc'">
+                pprice
+            </when>
+            <when test="arrayprod == 'pregdate desc'">
+                pregdate DESC
+            </when>
+            <otherwise>
+                pname
+            </otherwise>
+        </choose>
+    </if>
+	</select>
+	
+	
+	
+	
+	<select id="getAdProdList" resultType="prod">
+	  SELECT * FROM product WHERE 1=1
+	  	<if test="searchCondition == 'PCODE'">
+	    	AND pcode LIKE CONCAT('%', #{searchKeyword}, '%')
+	  	</if>
+	  	<if test="searchCondition == 'PNAME'">
+	    	AND pname LIKE CONCAT('%', #{searchKeyword}, '%')
+	  	</if>
+	  	ORDER BY pregdate DESC
+	 	LIMIT 10 OFFSET #{offset}
+	</select>
+	
+  <insert id="insertProd" parameterType="prod">
+  		<![CDATA[INSERT INTO PRODUCT(PCODE, PNAME, PDES, PIMG1, PIMG2, PPRICE, PTYPE) VALUES(#{pcode}, #{pname}, #{pdes}, #{pimg1}, #{pimg2}, #{pprice}, #{ptype})]]>
+	</insert>
+	
+	<update id="updateProd">
+  	<![CDATA[UPDATE product SET PNAME=#{pname}, PPRICE=#{pprice}, PDES=#{pdes},
+  		PIMG1=#{pimg1}, PIMG2=#{pimg2} where PCODE=#{pcode}]]>
+ 	</update>
+ 	
+	<delete id="deleteProd">
+  		<![CDATA[DELETE FROM product WHERE PCODE=#{pcode}]]>
+  	</delete>
+  
+  <select id="getPcode" resultType="String">
+    	<![CDATA[SELECT pcode FROM product WHERE ptype=#{ptype} ORDER BY PCODE DESC LIMIT 1]]>
+  	</select>
+  	
+  	<select id="checkPcode" resultType="int">
+    	<![CDATA[SELECT COUNT(*) FROM product WHERE pcode=#{pcode}]]>
+  	</select>
+  
+  <select id="getListCount" resultType="int">
+	  SELECT COUNT(*) FROM product WHERE 1=1
+	  	<if test="searchCondition == 'PCODE'">
+	    	AND pcode LIKE CONCAT('%', #{searchKeyword}, '%')
+	  	</if>
+	  	<if test="searchCondition == 'PNAME'">
+	    	AND pname LIKE CONCAT('%', #{searchKeyword}, '%')
+	  	</if>
+	</select>
+  
+  
+  <select id="count1" resultType="int" useCache="false">
+    	<![CDATA[SELECT COUNT(*) FROM reserve WHERE pname like CONCAT('%','유치원','%')]]>
+  	</select>
+  	<select id="count2" resultType="int" useCache="false">
+    	<![CDATA[SELECT COUNT(*) FROM reserve WHERE pname like "%호텔%"]]>
+  	</select>
+  	<select id="count3" resultType="int" useCache="false">
+    	<![CDATA[SELECT COUNT(*) FROM reserve WHERE pname like "%미용%"]]>
+  	</select>
+  	 <select id="getPtype" resultType="map">
+        SELECT ptype, COUNT(*) as count
+        FROM reserve
+        GROUP BY ptype
+    </select>
+  
+  <select id="getProdListbyPtype" resultMap="prodResult">
+    SELECT * FROM product
+    <where>
+    	<if test="ptype != null and ptype != '' and ptype != 'all'">
+            ptype=#{ptype}
+        </if>
+        <if test="ptype == 'all'">
+            ptype IN ('간식', '미용', '사료', '영양제', '장난감')
+        </if>
+    </where>
+    ORDER BY pname
+  </select>
+
+  
+
+</mapper>

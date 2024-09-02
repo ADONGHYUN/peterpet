@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="payDAO">
+	<resultMap type="pay" id="payResult">
+		<id column="PAYMENTID" property="paymentId" />
+		<result column="ORDERNAME" property="orderName" />
+		<result column="TOTALAMOUNT" property="totalAmount" />
+		<result column="UID" property="uid" />
+		<result column="UNAME" property="uname" />
+		<result column="UTEL" property="utel" />
+		<result column="UEMAIL" property="uemail" />
+		<result column="ADDR" property="addr" />
+		<result column="ZCODE" property="zcode" />
+		<result column="PCODE" property="pcode" />
+		<result column="PNAME" property="pname" />
+		<result column="PIMG1" property="pimg1" />
+		<result column="PPRICE" property="pprice" />
+		<result column="PTYPE" property="ptype" />
+		<result column="RCOUNT" property="rcount" />
+		<result column="RTOAL" property="rtotal" />
+		<result column="RDINFO" property="rdinfo" />
+		<result column="RSDAY" property="rsday" />
+		<result column="RPERIOD" property="rperiod" />
+		<result column="REDAY" property="reday" />
+		<result column="STATUS" property="status" />
+		<result column="TRANSACTIONTYPE" property="transactionType" />
+		<result column="TXID" property="txId" />
+		<result column="CODE" property="code" />
+		<result column="PAYDATE" property="paydate" />
+		<result column="CANCLEDATE" property="cancledate" />
+	</resultMap>
+	
+	<select id="getPayList" parameterType="pay" resultType="pay">
+		<![CDATA[SELECT * FROM payment WHERE UID = #{uid}]]>
+	</select>
+	
+	<insert id="insertPay" parameterType="pay">
+		<![CDATA[INSERT INTO payment (PAYMENTID, ORDERNAME, TOTALAMOUNT, UID, UNAME, UTEL, ADDR, ZCODE, 
+			PCODE, PNAME, PIMG1, PPRICE, PTYPE, RCOUNT, RTOTAL) values
+			(#{paymentId}, #{orderName}, #{totalAmount}, #{uid}, #{uname}, #{utel}, #{addr}, #{zcode}, #{pcode},
+			#{pname}, #{pimg1}, #{pprice}, #{ptype}, #{rcount}, #{rtotal})]]>
+	</insert>
+	<insert id="insertPayProd" parameterType="pay">
+		<![CDATA[
+	    INSERT INTO payment (PAYMENTID, ORDERNAME, TOTALAMOUNT, UID, UNAME, UTEL, ADDR, ZCODE,
+	    PCODE, PNAME, PIMG1, PPRICE, PTYPE, RCOUNT, RTOTAL, RDINFO, RSDAY, RPERIOD, REDAY)
+	    VALUES (#{paymentId}, #{orderName}, #{totalAmount}, 
+	    #{uid}, #{uname}, #{utel}, #{addr}, #{zcode}, #{pcode},
+	    #{pname}, #{pimg1}, #{pprice}, #{ptype}, #{rcount}, #{rtotal}, 
+	    #{rdinfo}, #{rsday}, #{rperiod}, #{reday})
+	    ]]>
+	</insert>
+	
+	
+	<select id="findAmount" resultType="int">
+		<![CDATA[SELECT DISTINCT TOTALAMOUNT FROM payment WHERE PAYMENTID = #{paymentId}]]>
+	</select>
+	
+	<select id="getMypayList" resultMap="payResult">
+		<![CDATA[
+		SELECT paymentId, orderName, totalAmount, pimg1, paydate
+		FROM payment
+		WHERE UID=#{uid} group by paymentId ORDER BY paymentId DESC;
+		]]>
+	</select>
+	
+	<select id="getPayDetail" resultType="pay">
+		<![CDATA[SELECT * FROM payment WHERE PAYMENTID = #{paymentId}]]>
+	</select>
+	
+	<update id="updatePayStatus" parameterType="pay">
+		<![CDATA[UPDATE payment SET TRANSACTIONTYPE=#{transactionType}, TXID=#{txId}, CODE=#{code}, 
+		STATUS=#{status}, PAYDATE=now() WHERE PAYMENTID = #{paymentId}]]>
+	</update>
+	
+	<select id="getAdPayList" resultType="pay">
+		SELECT * FROM payment WHERE 1=1
+	  	<if test="searchCondition == 'PAYMENTID'">
+	    	AND paymentId LIKE CONCAT('%', #{searchKeyword}, '%')
+	  	</if>
+	  	<if test="searchCondition == 'ORDERNAME'">
+	    	AND orderName LIKE CONCAT('%', #{searchKeyword}, '%')
+	  	</if>
+	  	ORDER BY paydate DESC
+	 	LIMIT 10 OFFSET #{offset}
+	</select>
+	<select id="getListCount" resultType="int">
+		SELECT COUNT(*) FROM payment WHERE 1=1
+	  	<if test="searchCondition == 'PCODE'">
+	    	AND paymentId LIKE CONCAT('%', #{searchKeyword}, '%')
+	  	</if>
+	  	<if test="searchCondition == 'PNAME'">
+	    	AND orderName LIKE CONCAT('%', #{searchKeyword}, '%')
+	  	</if>
+	</select>
+	<delete id="deleteByPaymentId">
+		<![CDATA[DELETE FROM PAYMENT WHERE PAYMENTID=#{paymentId}]]>
+	</delete>
+	<select id="bestProdList" resultType="pay">
+		<![CDATA[
+			select pcode, pimg1, pprice, pname, count(*) 
+			from payment group by pcode order by count(*) desc limit 3;
+		]]>
+	</select>
+</mapper>

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+
+	<aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+	<tx:annotation-driven transaction-manager="txManager"/>
+
+	<context:component-scan
+		base-package="kr.co.peterpet"></context:component-scan>
+
+	<mvc:resources location="/resources/" mapping="/resources/**"></mvc:resources>
+
+	<mvc:annotation-driven></mvc:annotation-driven>
+
+	<!-- 파일 업로드 설정 -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize" value="3200000"></property>
+	</bean>
+
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/views/"></property>
+		<property name="suffix" value=".jsp"></property>
+	</bean>
+ 	
+ 	<bean class="kr.co.peterpet.user.impl.KakaoAPI">
+		<constructor-arg name="key"
+			value="b3041f803d949fea89f8e17641d70c5f" />
+		<constructor-arg name="loginURI"
+			value="http://localhost:8080/kakao-login" />
+		<constructor-arg name="clientSecret"
+			value="fzbL7y37vflWnfvBecsd4DLNpy4DdueD" />
+	</bean>
+	
+	<bean class="kr.co.peterpet.user.impl.NaverAPI">
+		<constructor-arg name="client_id"
+			value="kilrFfDYJjfO_dAjYWls" />
+		<constructor-arg name="loginURI"
+			value="http://localhost:8080/naver-login" />
+		<constructor-arg name="clientSecret"
+			value="MBk3sXYRcb" />
+	</bean>
+	
+	<bean class="kr.co.peterpet.user.impl.State">
+			<constructor-arg name="ranChar"
+			value="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" />
+	</bean>
+	
+	<bean id="txManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+		<tx:attributes>
+			<tx:method name="get*" read-only="true"/>
+			<tx:method name="*" />
+		</tx:attributes>
+	</tx:advice>
+
+	<aop:config>
+		<aop:pointcut
+			expression="execution(* kr.co.peterpet..*(..))" id="txPointcut" />
+		<aop:advisor pointcut-ref="txPointcut"
+			advice-ref="txAdvice" />
+	</aop:config>
+	
+	<!-- gmail설정 -->
+	<bean id="mailSender2"
+		class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="smtp.gmail.com" />
+		<property name="port" value="587" />
+		<property name="username" value="trustmeucb@gmail.com" /> <!--SMTP 이메일 아이디 -->
+		<property name="password" value="wziv otfr bugn oija" /> <!--SMTP 비밀번호 -->
+		<!-- 보안연결 TLS과 관련된 설정 -->
+		<property name="javaMailProperties">
+			<props>
+				<prop key="mail.smtp.starttls.enable">true</prop>
+				<prop key="mail.smtp.auth">true </prop>
+				<prop key="mail.transport.protocol">smtp</prop>
+				<prop key="mail.debug">true</prop>
+				<prop key="mail.smtp.ssl.trust">smtp.gmail.com</prop>
+				<prop key="mail.smtp.ssl.protocols">TLSv1.2</prop>
+			</props>
+		</property>
+	</bean>
+	
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/**" />
+			<mvc:exclude-mapping path="/login" />
+        	<mvc:exclude-mapping path="/user/join**/**" />
+        	<mvc:exclude-mapping path="/resources/**" />
+        	<mvc:exclude-mapping path="/kakao**" />
+        	<mvc:exclude-mapping path="/naver**" />
+        	<mvc:exclude-mapping path="/user/find**" />
+        	<mvc:exclude-mapping path="/admin/login" />
+			<bean id="twoInter" class="kr.co.peterpet.interceptor.Interceptor"></bean>
+		</mvc:interceptor>
+	</mvc:interceptors>
+</beans>
